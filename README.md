@@ -43,17 +43,30 @@ git clone https://github.com/jmckenzie-cs/falcon-cloud-security-focused-asset-co
 cd falcon-cloud-security-focused-asset-coverage-dashboard
 ```
 
-### 2. Create the Foundry app and generate your manifest
+### 2. Create the Foundry app
 
 ```bash
 foundry apps create --name asset-coverage-dashboard
 ```
 
-This creates the app in your Falcon tenant and generates a `manifest.yml` with your unique app and component IDs.
+This registers the app in your Falcon tenant and generates a `manifest.yml` containing your unique IDs. **Open that file and note the following four values** — you'll need them in the next step:
 
-### 3. Merge the template into your generated manifest
+| Field | Location in manifest.yml |
+|---|---|
+| `app_id` | top-level `app_id:` |
+| Page ID | `ui.pages.coverage-dashboard.id` |
+| Navigation ID | `ui.navigation.id` |
+| Function ID | first entry under `functions[].id` |
 
-Copy the handlers, scopes, and settings from `manifest.template.yml` into the `manifest.yml` that was just generated, or replace the generated manifest entirely using the template — just fill in the `app_id`, page `id`, navigation `id`, and function `id` values from the generated file.
+### 3. Apply the template
+
+Replace the generated manifest with the app's template, then fill in the four IDs you noted above:
+
+```bash
+cp manifest.template.yml manifest.yml
+```
+
+Open `manifest.yml` in your editor and set the four blank `id: ""` fields to the values from step 2.
 
 ### 4. Install UI dependencies
 
