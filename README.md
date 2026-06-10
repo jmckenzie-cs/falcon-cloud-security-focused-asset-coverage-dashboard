@@ -2,7 +2,7 @@
 
 A CrowdStrike Falcon Foundry app that shows sensor coverage across your cloud environment, broken down by asset type.
 
-![Asset Coverage Dashboard](screenshot.png)
+![Asset Coverage Dashboard](screenshot.jpg)
 
 ## What it does
 
