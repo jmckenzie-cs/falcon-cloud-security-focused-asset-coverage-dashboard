@@ -36,6 +36,31 @@ Data is pulled live from the Falcon platform APIs on every page load — no manu
 
 ## Installation
 
+There are two ways to install this app:
+
+| Method | Best for |
+|---|---|
+| [Option A: Import via Falcon Console](#option-a-import-via-falcon-console-recommended) | Quick install — no CLI or build tools required |
+| [Option B: Build and deploy from source](#option-b-build-and-deploy-from-source) | Developers who want to modify the app |
+
+---
+
+### Option A: Import via Falcon Console (Recommended)
+
+No CLI or build tools required. Uses Foundry's built-in app import feature.
+
+1. Download the latest `asset-coverage-dashboard.tar.gz` from the [Releases](https://github.com/jmckenzie-cs/falcon-cloud-security-focused-asset-coverage-dashboard/releases) page.
+2. In the Falcon console, go to **Foundry > App manager**.
+3. Click **Import app** and upload the `.tar.gz` file.
+4. Once deployment completes, go to the **Releases** tab and release the app.
+5. Install the app from the app catalog to make it visible to users.
+
+> **Note:** All capabilities in the app must be supported by your CID's subscriptions. The app requires Falcon Cloud Security (CSPM) to be enabled.
+
+---
+
+### Option B: Build and deploy from source
+
 ### 1. Clone the repo
 
 ```bash
