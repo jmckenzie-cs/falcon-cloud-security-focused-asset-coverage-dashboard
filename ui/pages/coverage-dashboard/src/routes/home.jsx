@@ -57,7 +57,7 @@ function CoverageTable({ data }) {
         {rows.map((row) => (
           <>
             <tr key={row.name} style={{ borderBottom: "1px solid #eee" }}>
-              <td style={{ padding: "14px 16px 14px 0", fontWeight: "bold", color: "#1a6fd4" }}>
+              <td style={{ padding: "14px 16px 14px 0", fontWeight: "bold", color: "#e53935" }}>
                 {row.name}
               </td>
               <td style={{ padding: "14px 16px 14px 0" }}>
@@ -125,7 +125,7 @@ function UnprotectedSection({ rows, typeDetails, onExpand }) {
             <button
               onClick={() => toggle(row.name)}
               style={{ background: "none", border: "none", cursor: "pointer",
-                       fontSize: "13px", fontWeight: "bold", color: "#1a6fd4", padding: "4px 0" }}
+                       fontSize: "13px", fontWeight: "bold", color: "#e53935", padding: "4px 0" }}
             >
               {isExpanded ? "▾" : "▸"}{" "}
               {row.name} — {(row.without_sensors ?? 0).toLocaleString()} unprotected
