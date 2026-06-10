@@ -1,0 +1,93 @@
+app_id: ""
+name: asset-coverage-dashboard
+description: Sensor coverage summary across cloud asset types
+logo: ""
+vendor: ""
+vendor_products: []
+use_case: ""
+manifest_version: "2023-05-09"
+ignored:
+    - .+/node_modules$
+    - .+/node_modules/.+
+    - .+/venv$
+    - .+/venv/.+
+ui:
+    homepage: pages.coverage-dashboard
+    extensions: []
+    pages:
+        coverage-dashboard:
+            id: ""
+            name: coverage-dashboard
+            description: Sensor coverage table by cloud asset type
+            path: ui/pages/coverage-dashboard/src/dist
+            entrypoint: ui/pages/coverage-dashboard/src/dist/index.html
+            content_security_policy:
+                connect-src: []
+                style-src: []
+                style-src-elem: []
+                script-src: []
+                form-action: []
+                img-src: []
+                media-src: []
+                object-src: []
+            permissions: []
+    dashboards: {}
+    navigation:
+        id: ""
+        links:
+            - path: /
+              name: Coverage Dashboard
+              permissions: []
+              ref: pages.coverage-dashboard
+api_integrations: []
+rtr_scripts: []
+collections: []
+auth:
+    scopes:
+        - cloud-security-assets:read
+        - devices:read
+        - kubernetes-protection:read
+    permissions: {}
+    roles: []
+functions:
+    - id: ""
+      name: asset-coverage
+      config: null
+      description: Fetches cloud asset counts with/without sensors per asset type
+      path: functions/asset-coverage
+      environment_variables: {}
+      handlers:
+        - name: get_coverage
+          description: Fetches cloud asset counts with/without sensors per asset type
+          method: GET
+          api_path: /coverage
+          payload_type: ""
+          request_schema: null
+          response_schema: null
+          workflow_integration: null
+          permissions: []
+        - name: get_debug
+          description: Debug endpoint to inspect raw API responses
+          method: GET
+          api_path: /debug
+          payload_type: ""
+          request_schema: null
+          response_schema: null
+          workflow_integration: null
+          permissions: []
+        - name: get_details
+          description: Fetches unprotected asset details for a given asset type
+          method: GET
+          api_path: /details
+          payload_type: ""
+          request_schema: null
+          response_schema: null
+          workflow_integration: null
+          permissions: []
+      language: python
+workflows: []
+parsers: []
+logscale:
+    saved_searches: []
+lookup_files: []
+docs: {}

@@ -1,0 +1,20 @@
+# Manifests with environment-specific IDs — use manifest.template.yml instead
+manifest.yml
+manifest.yml.*.backup
+manifest.yml.*-backup*
+
+# Build artifacts (run npm run build before deploying)
+ui/pages/coverage-dashboard/src/dist/
+
+# Dependencies
+ui/pages/coverage-dashboard/node_modules/
+functions/asset-coverage/venv/
+
+# Python
+__pycache__/
+*.pyc
+
+# Misc
+.DS_Store
+.idea/
+email_reply.html
