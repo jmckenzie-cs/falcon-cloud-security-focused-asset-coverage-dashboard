@@ -1,5 +1,27 @@
+// v0.0.42
 import React, { useContext, useEffect, useState } from "react";
 import { FalconApiContext } from "../contexts/falcon-api-context";
+
+function toCSV(headers, rows) {
+  const escape = (v) => {
+    const s = v == null ? "" : String(v);
+    return s.includes(",") || s.includes('"') || s.includes("\n")
+      ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  return [headers, ...rows].map(r => r.map(escape).join(",")).join("\n");
+}
+
+function downloadCSV(filename, csv) {
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 100);
+}
 
 function formatCount(count, estimated) {
   const formatted = count.toLocaleString();
@@ -187,6 +209,8 @@ function Home() {
   const [debugData, setDebugData] = useState(null);
   const [debugLoading, setDebugLoading] = useState(false);
   const [typeDetails, setTypeDetails] = useState({});
+  const [exportingDetails, setExportingDetails] = useState(false);
+  const [csvPanel, setCsvPanel] = useState(null); // { content, filename }
 
   useEffect(() => {
     async function fetchCoverage() {
@@ -230,6 +254,61 @@ function Home() {
     }
   }
 
+  function exportSummaryCSV() {
+    const today = new Date().toISOString().slice(0, 10);
+    const headers = ["Asset Type", "Total Count", "With Sensors", "Without Sensors", "Coverage Rate (%)", "Estimated"];
+    const rows = (data?.rows ?? []).map(r => [
+      r.name,
+      r.total_count ?? "",
+      r.with_sensors ?? "",
+      r.without_sensors ?? "",
+      r.coverage_rate ?? "",
+      r.estimated ? "true" : "false",
+    ]);
+    setCsvPanel({ content: toCSV(headers, rows), filename: `asset-coverage-summary-${today}.csv` });
+  }
+
+  async function exportDetailsCSV() {
+    const today = new Date().toISOString().slice(0, 10);
+    const detailRows = (data?.rows ?? []).filter(r => r.name !== "K8s Clusters with KAC");
+    const headers = ["Asset Type", "Resource ID", "Resource Name", "Account ID", "Region", "Status"];
+
+    setExportingDetails(true);
+    const resolved = { ...typeDetails };
+
+    // Fetch any types not yet loaded
+    await Promise.all(
+      detailRows
+        .filter(r => !resolved[r.name] || resolved[r.name].loading)
+        .map(async (r) => {
+          try {
+            const raw = await Promise.race([
+              falcon.cloudFunction({ name: "asset-coverage", version: 1 })
+                .execute({ method: "GET", path: "/details", params: { query: { type: [r.name] } } }),
+              new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 60000)),
+            ]);
+            const group = ((raw?.body ?? raw)?.details ?? [])[0] ?? {};
+            resolved[r.name] = { loading: false, assets: group.assets ?? [], total: group.total ?? 0, shown: group.shown ?? 0 };
+            setTypeDetails(prev => ({ ...prev, [r.name]: resolved[r.name] }));
+          } catch {
+            resolved[r.name] = { loading: false, error: true };
+          }
+        })
+    );
+
+    const csvRows = [];
+    for (const r of detailRows) {
+      const td = resolved[r.name];
+      if (!td || td.error) continue;
+      for (const a of td.assets ?? []) {
+        csvRows.push([r.name, a.resource_id ?? "", a.resource_name ?? "", a.account_id ?? "", a.region ?? "", a.status ?? ""]);
+      }
+    }
+
+    setExportingDetails(false);
+    setCsvPanel({ content: toCSV(headers, csvRows), filename: `asset-coverage-details-${today}.csv` });
+  }
+
   async function runDebug() {
     setDebugLoading(true);
     setDebugData(null);
@@ -261,6 +340,41 @@ function Home() {
   return (
     <div>
       <CoverageTable data={data} />
+      <div style={{ padding: "0 24px 8px", display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+        <button
+          onClick={exportSummaryCSV}
+          style={{ fontSize: "12px", padding: "4px 10px", cursor: "pointer" }}
+        >
+          Export Summary CSV
+        </button>
+        <button
+          onClick={exportDetailsCSV}
+          disabled={exportingDetails}
+          style={{ fontSize: "12px", padding: "4px 10px", cursor: exportingDetails ? "default" : "pointer" }}
+        >
+          {exportingDetails ? "Fetching details…" : "Export Details CSV"}
+        </button>
+      </div>
+      {csvPanel && (
+        <div style={{ padding: "0 24px 16px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+            <span style={{ fontSize: "12px", color: "#aaa" }}>
+              {csvPanel.filename} — Select all, copy, paste into a .csv file
+            </span>
+            <button onClick={() => setCsvPanel(null)} style={{ fontSize: "11px", padding: "2px 8px", cursor: "pointer" }}>
+              Close
+            </button>
+          </div>
+          <textarea
+            readOnly
+            value={csvPanel.content}
+            onFocus={e => e.target.select()}
+            style={{ width: "100%", height: "160px", fontSize: "11px", fontFamily: "monospace",
+                     background: "#1a1a1a", color: "#ccc", border: "1px solid #444", borderRadius: "3px",
+                     padding: "8px", boxSizing: "border-box", resize: "vertical" }}
+          />
+        </div>
+      )}
       {data && <UnprotectedSection rows={data.rows} typeDetails={typeDetails} onExpand={fetchTypeDetails} />}
       <div style={{ padding: "0 24px 24px" }}>
         <button
